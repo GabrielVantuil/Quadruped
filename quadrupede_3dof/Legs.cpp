@@ -35,19 +35,19 @@ void Legs::walk(float dirD, float dirE, int pata) {
             alpha =  map(amostra, Xb, Xd, amplitudeAlpha , 0);
         else if (amostra < Xb)
             alpha =  map(amostra, Xa, Xb, 0, amplitudeAlpha);
-
+        /*
         if (pata < Total_legs/2)  //direito
             alpha = map(alpha, 0, amplitudeAlpha, amplitudeAlpha, 0);
-
-        alpha -= amplitudeAlpha / 2;
-        if (pata < Total_legs/2)              //direito
+        */
+        //alpha -= amplitudeAlpha / 2;
+        /*if (pata < Total_legs/2)              //direito
             alpha = dirD * alpha;
         else                 //esquerdo
             alpha = dirE * alpha;
-
-        if (alpha > amplitudeAlpha / 2)           //filtro
+        */
+        if (alpha > amplitudeAlpha)           //filtro
             alpha = amplitudeAlpha / 2;
-        else if (alpha < -amplitudeAlpha / 2)     //filtro
+        else if (alpha < -amplitudeAlpha)     //filtro
             alpha = -amplitudeAlpha / 2;
 
         

@@ -21,7 +21,7 @@ Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
 Legs legs(Total_legs,DOF_leg);
 
 
-#define INV_IMPAR (2*(i%2)-1) // "(2*(i%2)-1)" inverte o sinal caso (i) seja impar (lado direito)
+#define INV_PAR (2*(i%2)-1) // "(2*(i%2)-1)" inverte o sinal caso (i) seja par (lado esquerdo)
 /*     Frente
   As portas 0,1,2,3 são os "quadril"
     90 graus (do servo) é a posição paralela aos "olhos" do robô (ou seja, perpendicular ao corpo)
@@ -49,7 +49,7 @@ float phase[4] = {0, 25, 50, 75};
 //float phase[4] = {50, 0, 50, 0};
   
 void setup(){
-  legs.set_curve_parameters(0, 60, 80, 100);
+  legs.set_curve_parameters(0, 80, 90, 100);
   legs.set_phase(phase);
   legs.set_amp_alpha(60);
   legs.set_amp_beta(30);
@@ -81,15 +81,27 @@ void mover_suave(int pos1[8], int pos2[8], int tempo_total) {
 void walk(float dirD, float dirE){
   for(int i =0; i<Total_legs; i++){
     legs.walk(dirD,dirE,i);
-    if(i==0||i==2)
-      setMotorAngle(i, 90 + (-pos_lado[i]*de_lado - (((!de_lado||i==0)*dirE) - ((i==2)*de_lado*dirE))*legs.get_alpha()) * INV_IMPAR);
-    if(i==1||i==3)
-      setMotorAngle(i, 90 + (-pos_lado[i]*de_lado - (((!de_lado||i==3)*dirD) - ((i==1)*de_lado*dirD))*legs.get_alpha()) * INV_IMPAR); 
+    if(i==0||i==2){//(-pos_lado[i]*de_lado - (((!de_lado||i==0)*dirE) - ((i==2)*de_lado*dirE))
+      //setMotorAngle(i, 90 + (-pos_lado[i]*de_lado - ((!de_lado||i==0)*esq)*quadril[i] + ((i==2)*de_lado*dir)*quadril[i]) * INV_IMPAR);
+//                    0, 90 + (X*0                - ((1)*alpha)*INV_PAR
 
-    setMotorAngle(i+4, 90 + (altura[i]+legs.get_beta()) * (2 * ((i) * (i - 3) == 0) - 1)); //"(2*((i-4)*(i-7)==0)-1)" inverte o sinal caso (i-4) seja 1 ou 2
-    setMotorAngle(i+8, 90 + (altura[i]+legs.get_beta()) * (2 * ((i) * (i - 3) == 0) - 1)); //"(2*((i-4)*(i-7)==0)-1)" inverte o sinal caso (i-8) seja 1 ou 2
+      setMotorAngle(i, 90 + (-pos_lado[i]*de_lado - ( ((!de_lado||i==0)*dirE) - ((i==2)*de_lado*dirD)) * legs.get_alpha() )*(2*(i==0) -1) );
+      Serial.print((pos_lado[i]*de_lado - ( ((!de_lado||i==0)*dirE) + ((i==2)*de_lado*dirD))*legs.get_alpha() ) );
+
+    }
+    if(i==1||i==3){
+      setMotorAngle(i, 90 + (pos_lado[i]*de_lado - (((!de_lado||i==3)*dirD) + ((i==1)*de_lado*dirE))*legs.get_alpha()) * (2*(i==3) -1)); 
+      Serial.print((pos_lado[i]*de_lado - (((!de_lado||i==3)*dirD) + ((i==1)*de_lado*dirE))*legs.get_alpha()) ); 
+    
+    }
+    /*
+    setMotorAngle(i, 90 + (-pos_lado[i]*de_lado - (((!de_lado*dirD) - (de_lado*dirD))*legs.get_alpha()) * INV_IMPAR);
+    */
+
+    setMotorAngle(i+4, 90 + altura[i]+(legs.get_beta()) * (2 * ((i-1) * (i - 2) == 0) - 1)); //"(2*((i-4)*(i-7)==0)-1)" inverte o sinal caso (i-4) seja 1 ou 2
+    setMotorAngle(i+8, 90 + altura[i]+(legs.get_beta()) * (2 * ((i-1) * (i - 2) == 0) - 1)); //"(2*((i-4)*(i-7)==0)-1)" inverte o sinal caso (i-8) seja 1 ou 2
    
-    Serial.print(legs.get_alpha());
+    //Serial.print(legs.get_alpha());
     Serial.print(',');
   }
    Serial.println();
@@ -133,9 +145,9 @@ void mover(char pos[Total_motors],float esq, float dir) {
       // quando o valor de quadril[i] aumenta, a pata [i] vai para frente
       */
       if(i==0||i==2)
-        setMotorAngle(i, 90 + (-pos_lado[i]*de_lado - ((!de_lado||i==0)*esq)*quadril[i] + ((i==2)*de_lado*dir)*quadril[i]) * INV_IMPAR);
+        setMotorAngle(i, 90 + (-pos_lado[i]*de_lado - ((!de_lado||i==0)*esq)*quadril[i] + ((i==2)*de_lado*dir)*quadril[i]));
       if(i==1||i==3)
-        setMotorAngle(i, 90 + (-pos_lado[i]*de_lado - ((!de_lado||i==3)*dir)*quadril[i] + ((i==1)*de_lado*esq)*quadril[i]) * INV_IMPAR); 
+        setMotorAngle(i, 90 + (-pos_lado[i]*de_lado - ((!de_lado||i==3)*dir)*quadril[i] + ((i==1)*de_lado*esq)*quadril[i])); 
       // quando o valor de quadril[i] aumenta, a pata [i] vai para frente
     }
     for (int i = 4; i < 8; i++) { //portas do hub de servos
@@ -218,11 +230,14 @@ char pos[qnt_pos][Total_motors] = {  // anda para frente
   {-11,10,10,-11,32,0,0,32,0,0,0,0}
 };
 char S;
+char f[12]={-45,-45,45,45, 45,45,45,45, 45,45,45,45};
 void loop() {
-        walk(1,1);
   if(Serial.available()){
     S=Serial.read();
   }
+  if(S=='f')
+    mover(f,1,1);
+
   if(S=='w' || S=='s' || S=='d' || S=='a' || S=='e' || S=='q')
     if(S=='w')
         walk(1,1);
