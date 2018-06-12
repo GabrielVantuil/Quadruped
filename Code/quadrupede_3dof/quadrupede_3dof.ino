@@ -12,10 +12,10 @@
 #define Total_motors Total_legs*DOF_leg
 
 #define ciclo 100
-#define velocidade 20
-#define amplitudeAlpha 60
-#define amplitudeBeta 50
-#define amplitudeGamma 20
+#define ampA 60
+#define ampB 50
+#define ampG 20
+int velocidade = 20;
 
 SoftwareSerial bluetooth(10, 11); // RX, TX
 Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver();
@@ -24,21 +24,21 @@ Legs legs(Total_legs,DOF_leg);
 
 #define INV_PAR (2*(i%2)-1) // "(2*(i%2)-1)" inverte o sinal caso (i) seja par (lado esquerdo)
 /*     Frente
-  As portas 0,1,2,3 são os "quadril"
-    90 graus (do servo) é a posição paralela aos "olhos" do robô (ou seja, perpendicular ao corpo)
-    90º do servo é equivalente à 0 na função "mover"
-  As portas 4,5,6,7 são os "joelho"
-    0º da função é a posição em que as patas ficam na altura da base do robô
-  As portas 8,9,10,11 são os "pe"
-    0º da função é a posição em que as patas ficam na altura da base do robô
-                _________            
-   ____________|         |_____________  
-  |__8______4__|0       1|______5___9__| 
-               |         |            
-   ____________|         |_____________  
-  |_11______7__|3       2|______6___10__| 
-               |_________|           
-  pe^ joelho^   ^quadril^ 
+    As portas 0,1,2,3 são os "quadril"
+        90 graus (do servo) é a posição paralela aos "olhos" do robô (ou seja, perpendicular ao corpo)
+        90º do servo é equivalente à 0 na função "mover"
+    As portas 4,5,6,7 são os "joelho"
+        0º da função é a posição em que as patas ficam na altura da base do robô
+    As portas 8,9,10,11 são os "pe"
+        0º da função é a posição em que as patas ficam na altura da base do robô
+                  _________            
+    ____________|         |_____________  
+    |__8______4__|0       1|______5___9__| 
+                |         |            
+    ____________|         |_____________  
+    |_11______7__|3       2|______6___10__| 
+                |_________|           
+    pe^ joelho^   ^quadril^ 
 */
 const int Max[4] = { 10,  90,  90,  90};    //{quadril[0,1],quadril[2,3],joelho[0:3],pe[0:3]   patas para frente e para baixo
 const int Min[4] = {-90, -10, -50, -50};    //                          patas para tras   e para cima
@@ -46,6 +46,7 @@ const int pos_lado[12]={-70,-70,70,70,  0,0,0,0,  0,0,0,0};
 int altura[4] = {0,0,0,0};
 bool de_lado = 0;
 bool modo_omni=0;
+//float phase[4] = {0, 0, 0, 0};
 float phase[4] = {0, 25, 50, 75};
 //float phase[4] = {50, 0, 0, 50};
 char S;
@@ -54,11 +55,12 @@ char teste[12]={40,40,40,40, 40,40,40,40, 40,40,40,40};
 //float phase[4] = {50, 0, 50, 0};
   
 void setup(){
-  legs.set_curve_parameters(0,30,40,50, 80, 90, 100);
+//  legs.set_curve_parameters(0,30,40,50, 80, 90, 100);
+  legs.set_curve_parameters(0,24,37.5,50, 74, 87.5, 100);
   legs.set_phase(phase);
-  legs.set_amp_alpha(amplitudeAlpha);
-  legs.set_amp_beta(amplitudeBeta);
-  legs.set_amp_gamma(amplitudeGamma);
+  legs.set_amp_alpha(ampA);
+  legs.set_amp_beta(ampB);
+  legs.set_amp_gamma(ampG);
   legs.set_speed(velocidade);
   legs.set_ciclo(ciclo);
 
@@ -117,12 +119,14 @@ void walk_pos(char pos[Total_motors]){
     setMotorAngle(i+8, 90 + (altura[i] + pe[i]     ) * (2*((i - 1)*(i - 3) == 0) - 1));      //"(2 * ((i-1) * (i - 3) == 0) - 1)" inverte o sinal caso (i-8) seja 1 ou 2
   }
 }
-void plot_curves(){
+void plot_curves(int l){
   //for(int i =0; i<Total_legs; i++){
-    legs.walk(0);
+    legs.walk(l);
     Serial.print(legs.get_alpha());
     Serial.print(',');
     Serial.print(legs.get_beta());
+    Serial.print(',');
+    Serial.print(legs.get_gamma());
     Serial.println();
   //}
 }
@@ -133,18 +137,22 @@ void walk(float dirD, float dirE){
     legs.walk(i);
     if(!de_lado){
       if(i==0)
-        quad_temp= dirE * legs.get_alpha();
+        quad_temp=  map(legs.get_alpha(), 0, ampA, ampA/2 *(-dirE + 1), ampA/2 *( dirE + 1));
+        //quad_temp= dirE * legs.get_alpha();
       if(i==1)
-        quad_temp= dirD * -legs.get_alpha();
+        quad_temp= -map(legs.get_alpha(), 0, ampA, ampA/2 *(-dirD + 1), ampA/2 *( dirD + 1));
+        //quad_temp= dirD * -legs.get_alpha();
       if(i==2)
-        quad_temp= dirD * map(legs.get_alpha(),0,amplitudeAlpha,amplitudeAlpha,0);
+        quad_temp=  map(legs.get_alpha(), 0, ampA, ampA/2 *( dirD + 1), ampA/2 *(-dirD + 1));
+        //quad_temp= dirD * map(legs.get_alpha(),0,ampA, ampA, 0);
       if(i==3)
-        quad_temp= dirE * -map(legs.get_alpha(),0,amplitudeAlpha,amplitudeAlpha,0);
+        quad_temp= -map(legs.get_alpha(), 0, ampA, ampA/2 *( dirE + 1), ampA/2 *(-dirE + 1));
+        //quad_temp= dirE * -map(legs.get_alpha(),0,ampA,ampA,0);
       setMotorAngle(i, 90 + quad_temp);
     }
     Serial.print(quad_temp);
     setMotorAngle(i+4, 90 + (altura[i]+ -legs.get_beta()) * (2 * ((i-1) * (i - 3) == 0) - 1));  //"(2 * ((i-1) * (i - 3) == 0) - 1)" inverte o sinal caso (i-4) seja 1 ou 2
-    setMotorAngle(i+8, 90 + (altura[i]+ -legs.get_beta()) * (2 * ((i-1) * (i - 3) == 0) - 1));      //"(2 * ((i-1) * (i - 3) == 0) - 1)" inverte o sinal caso (i-8) seja 1 ou 2
+    setMotorAngle(i+8, 90 + (altura[i]+ -legs.get_gamma()) * (2 * ((i-1) * (i - 3) == 0) - 1));      //"(2 * ((i-1) * (i - 3) == 0) - 1)" inverte o sinal caso (i-8) seja 1 ou 2
     Serial.print(',');
   }
   Serial.println();
@@ -291,44 +299,53 @@ char pos[qnt_pos][Total_motors] = {  // anda para frente
   {-11,10,10,-11,32,0,0,32,0,0,0,0}
 };
 void loop() {
-  //plot_curves();
+  //plot_curves(0);
   
-  if(Serial.available()){
+  if(Serial.available())
     S=Serial.read();
-  }
+  
   if(S=='0')
     mover(p40,1,1);
   
   if(S=='g')
     real_pos(teste);
+  if(S=='t'){
+    char a[Total_motors] = {0,0,0,0, 0,0,0,0, 0,0,0,0};
+    walk_pos(a);
+  }
   if(S=='h')
     walk_pos(teste);
   
   if(S=='w' || S=='s' || S=='d' || S=='a' || S=='e' || S=='q'){
     if(S=='w')
-        walk(1,1);
-        //mover(pos[t],1,1);
-      for (int t = qnt_pos; t>0; t--) {   
-        if(S=='s')
+      walk(1,1);
+    if(S=='s'){
+      float phase1[4] = {75, 50, 25, 0};
+      legs.set_phase(phase1);  
+      while(!Serial.available())
+        walk(-1,-1);
+    }
+    if(S=='d')
+      walk(1,-1);
+    if(S=='a')
+      walk(-1,1);
+
+
+    for (int t = qnt_pos; t>0; t--) {   
+      if(!modo_omni){
+        if(S=='e')
+          mover(pos[t],1,0.5);
+        if(S=='q')
+          mover(pos[t],0.5,1);
+      }
+      else{
+        de_lado=1;
+        if(S=='d')
+          mover(pos[t],1,1);
+        if(S=='a')
           mover(pos[t],-1,-1);
-        if(!modo_omni){
-          if(S=='d')
-            mover(pos[t],1,-1);
-          if(S=='a')
-            mover(pos[t],-1,1);
-          if(S=='e')
-            mover(pos[t],1,0.5);
-          if(S=='q')
-            mover(pos[t],0.5,1);
-        }
-        else{
-          de_lado=1;
-          if(S=='d')
-            mover(pos[t],1,1);
-          if(S=='a')
-            mover(pos[t],-1,-1);
-          de_lado=0;
-        }
+        de_lado=0;
+      }
     }
   }
   if(S=='L'){
@@ -405,6 +422,26 @@ void loop() {
     char a[Total_motors] = {0,0,0,0, 0,0,0,0, 0,0,0,0};
     mover(a,1,1);
   }
+  
+  if(S=='v'){
+    Serial.println("new speed: ");
+    while(!Serial.available());
+      
+    S = Serial.read();
+
+    if(S=='1')
+      velocidade= 10;
+    if(S=='2')
+      velocidade= 40;
+    if(S=='3')
+      velocidade= 80;
+    if(S=='4')
+      velocidade= 150;
+    if(S=='5')
+      velocidade= 250;
+    S='1';
+  }
+
   if(S=='z'){
     Serial.println("----------test mode---------");
     Serial.println("press 'e' for exit");
