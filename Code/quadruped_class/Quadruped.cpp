@@ -71,33 +71,34 @@ void Quadruped::plot_curves(int l){
     Serial.print(alpha);
     Serial.print(',');
     Serial.print(beta);
-    Serial.print(',');
-    Serial.print(teste);
+    if(DOFs_leg>=3){
+      Serial.print(',');
+      Serial.print(teste);
+    }
     Serial.println();
-
 }
+
+
 void Quadruped::walk(float dirD, float dirE){
   int quad_temp;
   for(int i =0; i<4; i++){
     walk_leg(i);
-    //if(!de_lado){
-      if(i==0)
-        quad_temp=  map(alpha, 0, ampA, ampA/2 *(-dirE + 1), ampA/2 *( dirE + 1));
-      if(i==1)
-        quad_temp= -map(alpha, 0, ampA, ampA/2 *(-dirD + 1), ampA/2 *( dirD + 1));
-      if(i==2)
-        quad_temp=  map(alpha, 0, ampA, ampA/2 *( dirD + 1), ampA/2 *(-dirD + 1));
-      if(i==3)
-        quad_temp= -map(alpha, 0, ampA, ampA/2 *( dirE + 1), ampA/2 *(-dirE + 1));
-      setMotorAngle(i, 90 + quad_temp);
-    //}
-    setMotorAngle(i+4, 90 + (-altura[i] + beta) * (2 * ((i-1) * (i - 3) == 0) - 1));  //"(2 * ((i-1) * (i - 3) == 0) - 1)" inverte o sinal caso (i-4) seja 1 ou 2
+    if(i==0)
+      quad_temp=  map(alpha, 0, ampA, ampA/2 *(-dirE + 1), ampA/2 *( dirE + 1));
+    if(i==1)
+      quad_temp= -map(alpha, 0, ampA, ampA/2 *(-dirD + 1), ampA/2 *( dirD + 1));
+    if(i==2)
+      quad_temp=  map(alpha, 0, ampA, ampA/2 *( dirD + 1), ampA/2 *(-dirD + 1));
+    if(i==3)
+      quad_temp= -map(alpha, 0, ampA, ampA/2 *( dirE + 1), ampA/2 *(-dirE + 1));
+    setMotorAngle(i,   90 + quad_temp);
+    setMotorAngle(i+4, 90 + (-altura[i] + beta) * (2 * ((i-1) * (i-3) == 0) - 1));                  //"(2 * ((i-1) * (i - 3) == 0) - 1)" inverte o sinal caso (i-4) seja 1 ou 2
     if(DOFs_leg>=3)
-      setMotorAngle(i+8, 90 + (altura[i] + -gamma) * (2 * ((i-1) * (i - 3) == 0) - 1));      //"(2 * ((i-1) * (i - 3) == 0) - 1)" inverte o sinal caso (i-8) seja 1 ou 2
-  }
-  
+      setMotorAngle(i+8, 90 + (altura[i] - gamma) * (2 * ((i-1) * (i-3) == 0) - 1));                //"(2 * ((i-1) * (i - 3) == 0) - 1)" inverte o sinal caso (i-8) seja 1 ou 2
+  }  
   delayMicroseconds(speed*100);
 }
+
 
 void Quadruped::setMotorAngle(uint8_t num, uint16_t degree) {
   uint16_t pulselen = map(degree, 0, 180, SERVOMIN, SERVOMAX);
@@ -190,11 +191,13 @@ void Quadruped::walk_leg(int pata) {
     int xc = Xc;
     int xd = Xd;
     //alpha = ramp(n) * (AmpAlpha / Xb)* unitstep(-n+Xb) + (AmpAlpha + (Xb -  ramp(n)) * (AmpAlpha / (Xd-Xb)) )* unitstep(n-Xb);
-    alpha = ramp(n) * (AmpAlpha / Xe) - ramp(n-Xe) * (AmpAlpha / Xe) - ((ramp(n)-Xe) * (AmpAlpha / (Xg-Xe)) )* unitstep(n-Xe);
-    beta  = (ramp(n-Xe) * (AmpBeta / (Xf-Xe) ) - ramp(n-Xf) * (AmpBeta / (Xf-Xe) ) - ramp(n - Xf) * (AmpBeta / (Xf-Xe)) )* unitstep(n-Xe)* unitstep(-n+Xg);
+    //alpha = ramp(n) * (AmpAlpha / Xe) - ramp(n-Xe) * (AmpAlpha / Xe) - ((ramp(n)-Xe) * (AmpAlpha / (Xg-Xe)) )* unitstep(n-Xe);
+    alpha = AmpAlpha*( ramp(n)/Xe  - ramp(n-Xe)/Xe - ramp(n-Xe)/(Xg-Xe));
+
+    beta  = (ramp(n-Xe) * (AmpBeta / (Xf-Xe) ) - ramp(n-Xf) * (AmpBeta / (Xf-Xe) ) - ramp(n - Xf) * (AmpBeta / (Xg-Xf)) )* unitstep(n-Xe)* unitstep(-n+Xg);
     gamma = beta;
+  /******************************Gravity center correction***********************************/
     if(GC_correct){
-        /******************************Gravity center correction***********************************/
         if(pata==3||pata==0){
             alpha+= (ramp(n-Xe+25) * (AmpA_cor / (Xf-Xe) ) - ramp(n-Xf+25) * (AmpA_cor / (Xf-Xe) ) - ramp(n - Xf+25) * (AmpA_cor / (Xf-Xe)) )* unitstep(n-Xe+25)* unitstep(-n+Xg-25);
             alpha+= -(ramp(n-Xe+75) * (AmpA_cor / (Xf-Xe) ) - ramp(n-Xf+75) * (AmpA_cor / (Xf-Xe) ) - ramp(n - Xf+75) * (AmpA_cor / (Xf-Xe)) )* unitstep(n-Xe+75)* unitstep(-n+Xg-75);    
@@ -207,7 +210,7 @@ void Quadruped::walk_leg(int pata) {
         gamma+= (ramp(n-xb) * (AmpG_cor / (xc-xb) ) - ramp(n-xc) * (AmpG_cor / (xc-xb) ) - ramp(n - xc) * (AmpG_cor / (xc-xb)) )* unitstep(n-xb)* unitstep(-n+xd);// + (ramp(n-Xd) * (AmpBeta / (Xc-Xb)) );
 
     }
-    /*******************************************************************************************/
+  /*******************************************************************************************/
     
     //-ramp(n-Xb+25)* (AmpAlpha / (Xc-Xb)) + 2*ramp(n-Xc+25)* (AmpAlpha / (Xc-Xb)))*unitstep(-n+Xc); 
     
