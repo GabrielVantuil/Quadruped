@@ -16,6 +16,7 @@ class Quadruped{
         int Xa, Xb, Xc, Xd, Xe, Xf, Xg;
         float alpha, beta, gamma;
         bool GC_correct=0;
+        bool beta_rev=0;
         
     public:
         Quadruped(int DOF);
@@ -27,6 +28,7 @@ class Quadruped{
         void setMotorAngle(uint8_t num, uint16_t degree);
         void mover(char pos[],float dirE, float dirD);
         void begin();
+        void beta_negative(){beta_rev=1;};
 //////////////////////////////////////////////////////
         void walk_leg(int pata);
         void set_curve_parameters(int xa, int xb, int xc, int xd, int xe, int xf, int xg);

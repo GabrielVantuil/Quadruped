@@ -5,7 +5,7 @@
 
 #define SERVOMIN  150 // this is the 'minimum' pulse length count (out of 4096)
 #define SERVOMAX  600 // this is the 'maximum' pulse length count (out of 4096)
-
+#define B_REV  (-beta_rev*2+1)
 
 #define INV_PAR (2*(i%2)-1) // "(2*(i%2)-1)" inverte o sinal caso (i) seja par (lado esquerdo)
 #define Total_motors DOFs_leg*4
@@ -61,7 +61,7 @@ void Quadruped::walk_pos(char pos[]){
     if(i==3)
       setMotorAngle(i, 90 + -map(quadril[i],0,90,90,0));
       
-    setMotorAngle(i+4, 90 - (altura[i] + joelho[i] ) * (2*((i - 1)*(i - 3) == 0) - 1));  //"(2 * ((i-1) * (i - 3) == 0) - 1)" inverte o sinal caso (i-4) seja 1 ou 2
+    setMotorAngle(i+4, 90 - B_REV*(altura[i] + joelho[i] ) * (2*((i - 1)*(i - 3) == 0) - 1));  //"(2 * ((i-1) * (i - 3) == 0) - 1)" inverte o sinal caso (i-4) seja 1 ou 2
     if(DOFs_leg>=3)
         setMotorAngle(i+8, 90 + (altura[i] + pe[i]     ) * (2*((i - 1)*(i - 3) == 0) - 1));      //"(2 * ((i-1) * (i - 3) == 0) - 1)" inverte o sinal caso (i-8) seja 1 ou 2
   }
@@ -92,7 +92,7 @@ void Quadruped::walk(float dirD, float dirE){
     if(i==3)
       quad_temp= -map(alpha, 0, ampA, ampA/2 *( dirE + 1), ampA/2 *(-dirE + 1));
     setMotorAngle(i,   90 + quad_temp);
-    setMotorAngle(i+4, 90 + (-altura[i] + beta) * (2 * ((i-1) * (i-3) == 0) - 1));                  //"(2 * ((i-1) * (i - 3) == 0) - 1)" inverte o sinal caso (i-4) seja 1 ou 2
+    setMotorAngle(i+4, 90 + -  B_REV*(altura[i] + beta) * (2 * ((i-1) * (i-3) == 0) - 1));                  //"(2 * ((i-1) * (i - 3) == 0) - 1)" inverte o sinal caso (i-4) seja 1 ou 2
     if(DOFs_leg>=3)
       setMotorAngle(i+8, 90 + (altura[i] - gamma) * (2 * ((i-1) * (i-3) == 0) - 1));                //"(2 * ((i-1) * (i - 3) == 0) - 1)" inverte o sinal caso (i-8) seja 1 ou 2
   }  
@@ -152,7 +152,7 @@ void Quadruped::mover(char pos[],float dirE, float dirD) {
           quad_temp= dirE * -quadril[3];
         setMotorAngle(i, 90 + quad_temp);
       //}
-      setMotorAngle(i+4, 90 - (altura[i]+joelho[i]) * (2 * ((i-1) * (i - 3) == 0) - 1));  //"(2 * ((i-1) * (i - 3) == 0) - 1)" inverte o sinal caso (i-4) seja 1 ou 2
+      setMotorAngle(i+4, 90 + (altura[i]+joelho[i]) * (2 * ((i-1) * (i - 3) == 0) - 1));  //"(2 * ((i-1) * (i - 3) == 0) - 1)" inverte o sinal caso (i-4) seja 1 ou 2
       if(DOFs_leg>=3)
           setMotorAngle(i+8, 90 + (altura[i]+pe[i]) * (2 * ((i-1) * (i - 3) == 0) - 1));      //"(2 * ((i-1) * (i - 3) == 0) - 1)" inverte o sinal caso (i-8) seja 1 ou 2
    

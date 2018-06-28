@@ -39,7 +39,7 @@ void Legs::walk(int pata) {
     //alpha = ramp(n) * (AmpAlpha / Xb)* unitstep(-n+Xb) + (AmpAlpha + (Xb -  ramp(n)) * (AmpAlpha / (Xd-Xb)) )* unitstep(n-Xb);
     alpha = ramp(n) * (AmpAlpha / Xe) - ramp(n-Xe) * (AmpAlpha / Xe) - ((ramp(n)-Xe) * (AmpAlpha / (Xg-Xe)) )* unitstep(n-Xe);
     beta  = (ramp(n-Xe) * (AmpBeta / (Xf-Xe) ) - ramp(n-Xf) * (AmpBeta / (Xf-Xe) ) - ramp(n - Xf) * (AmpBeta / (Xf-Xe)) )* unitstep(n-Xe)* unitstep(-n+Xg);
-    gamma = beta;
+    gamma = 0;
     if(GC_correct){
         /******************************Gravity center correction***********************************/
         if(pata==3||pata==0){

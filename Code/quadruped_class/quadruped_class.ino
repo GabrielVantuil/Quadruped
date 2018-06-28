@@ -6,7 +6,7 @@
 #include "Quadruped.h"
 
 #define Total_legs  4
-#define DOF_leg 2
+#define DOF_leg 3
 #define Total_motors Total_legs*DOF_leg
 
 SoftwareSerial bluetooth(10, 11); // RX, TX
@@ -41,7 +41,7 @@ char S;
 char p40[Total_motors]    = {40,-40,-40,40, 40,40,40,40};
 char teste[Total_motors]  = {40,40,40,40, 40,40,40,40};
 
-Quadruped quadruped(2);
+Quadruped quadruped(3);
 
 void setup(){
   //float phase[4] = {0, 0, 0, 0};
@@ -50,19 +50,19 @@ void setup(){
 
 //  legs.set_curve_parameters(0,30,40,50, 80, 90, 100);
   //Serial.begin(115200);
-  quadruped.set_curve_parameters(0,24,37.5,50, 74, 87.5, 100);
+  quadruped.set_curve_parameters(0,24,37.5,50, 60, 80, 100);
   quadruped.set_phase(phase);
-  quadruped.set_amp_alpha(50);
-  quadruped.set_amp_beta(30);
-  quadruped.set_speed(500);
-  quadruped.set_resolution(200);
+  quadruped.set_amp_alpha(30);
+  quadruped.set_amp_beta(40);
+  quadruped.set_speed(100);
+  quadruped.set_resolution(30);
   quadruped.begin();
   S='1';
   //bluetooth.begin(9600);
 }
 
 void loop() {
-  quadruped.plot_curves(0);
+  /*quadruped.plot_curves(0);
   if(quadruped.get_alpha() == 0){
     int t=0;
       t=millis();
@@ -72,8 +72,7 @@ void loop() {
     delay(5000);
   }
 }
-
-/*
+*/
   if(Serial.available())
     S=Serial.read();
   
