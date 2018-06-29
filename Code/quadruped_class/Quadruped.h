@@ -30,6 +30,7 @@ class Quadruped{
         void begin();
         void beta_negative(){beta_rev=1;};
 //////////////////////////////////////////////////////
+
         void walk_leg(int pata);
         void set_curve_parameters(int xa, int xb, int xc, int xd, int xe, int xf, int xg);
         void set_phase(float Phase[]);
@@ -41,6 +42,9 @@ class Quadruped{
         int get_alpha(){return (int)alpha;}
         int get_beta(){return (int)beta;}
         int get_gamma(){return (int)gamma;}
+        int get_amp_alpha(){return ampA;}
+        int get_amp_beta(){return ampB;}
+        int get_amp_gamma(){return ampG;}
 
 
 };

@@ -35,9 +35,9 @@ void Quadruped::real_pos(char pos[]){
       pe[i - 8] = (int)pos[i];
   }
   for (int i = 0; i < 4; i++) {
-    setMotorAngle(i,  90 + quadril[i]);
-    setMotorAngle(i+4,90 + joelho[i]);
-    setMotorAngle(i+8,90 + pe[i]);
+    setMotorAngle(i,  quadril[i]);
+    setMotorAngle(i+4,joelho[i]);
+    setMotorAngle(i+8,pe[i]);
   }
 }
 
@@ -52,6 +52,7 @@ void Quadruped::walk_pos(char pos[]){
       pe[i - 8] = (int)pos[i];
   }
   for (int i = 0; i < 4; i++) {
+    /*
     if(i==0)
       setMotorAngle(i, 90 + quadril[i]);
     if(i==1)
@@ -59,11 +60,22 @@ void Quadruped::walk_pos(char pos[]){
     if(i==2)
       setMotorAngle(i, 90 + map(quadril[i],0,90,90,0));
     if(i==3)
-      setMotorAngle(i, 90 + -map(quadril[i],0,90,90,0));
-      
-    setMotorAngle(i+4, 90 - B_REV*(altura[i] + joelho[i] ) * (2*((i - 1)*(i - 3) == 0) - 1));  //"(2 * ((i-1) * (i - 3) == 0) - 1)" inverte o sinal caso (i-4) seja 1 ou 2
+      setMotorAngle(i, 90 + -map(quadril[i],0,90,90,0));*/
+    float dir;
+    int S;
+    if(i==0){
+      S=1;    dir = 1;}
+    if(i==1){
+      S=-1;   dir = 1;}
+    if(i==2){
+      S=1;    dir = -1;}
+    if(i==3){
+      S=-1;   dir = -1;}
+    int quad_temp= S*(map(pos[i], 0, ampA, ampA/2 *(-dir), ampA/2 *(dir))+45);
+    setMotorAngle(i, 90 + quad_temp);
+    setMotorAngle(i+4, 90 + (altura[i] + B_REV*joelho[i] ) * (2*((i - 1)*(i - 3) == 0) - 1));  //"(2 * ((i-1) * (i - 3) == 0) - 1)" inverte o sinal caso (i-4) seja 1 ou 2
     if(DOFs_leg>=3)
-        setMotorAngle(i+8, 90 + (altura[i] + pe[i]     ) * (2*((i - 1)*(i - 3) == 0) - 1));      //"(2 * ((i-1) * (i - 3) == 0) - 1)" inverte o sinal caso (i-8) seja 1 ou 2
+        setMotorAngle(i+8, 90 + (altura[i] + B_REV*pe[i]     ) * (2*((i - 1)*(i - 3) == 0) - 1));      //"(2 * ((i-1) * (i - 3) == 0) - 1)" inverte o sinal caso (i-8) seja 1 ou 2
   }
 }
 void Quadruped::plot_curves(int l){
@@ -79,22 +91,37 @@ void Quadruped::plot_curves(int l){
 }
 
 
-void Quadruped::walk(float dirD, float dirE){
+void Quadruped::walk(float right, float left){
   int quad_temp;
   for(int i =0; i<4; i++){
     walk_leg(i);
+    /*
     if(i==0)
-      quad_temp=  map(alpha, 0, ampA, ampA/2 *(-dirE + 1), ampA/2 *( dirE + 1));
+      quad_temp=  map(alpha, 0, ampA, ampA/2 *(-dirE + 1), ampA/2 *( dirE + 1))+45;
     if(i==1)
-      quad_temp= -map(alpha, 0, ampA, ampA/2 *(-dirD + 1), ampA/2 *( dirD + 1));
+      quad_temp= -(map(alpha, 0, ampA, ampA/2 *(-dirD + 1), ampA/2 *( dirD + 1))+45);
     if(i==2)
-      quad_temp=  map(alpha, 0, ampA, ampA/2 *( dirD + 1), ampA/2 *(-dirD + 1));
+      quad_temp=  map(alpha, 0, ampA, ampA/2 *( dirD + 1), ampA/2 *(-dirD + 1))+45;
     if(i==3)
-      quad_temp= -map(alpha, 0, ampA, ampA/2 *( dirE + 1), ampA/2 *(-dirE + 1));
-    setMotorAngle(i,   90 + quad_temp);
-    setMotorAngle(i+4, 90 + -  B_REV*(altura[i] + beta) * (2 * ((i-1) * (i-3) == 0) - 1));                  //"(2 * ((i-1) * (i - 3) == 0) - 1)" inverte o sinal caso (i-4) seja 1 ou 2
+      quad_temp= -(map(alpha, 0, ampA, ampA/2 *( dirE + 1), ampA/2 *(-dirE + 1))+45);
+      */
+    float dir;
+    int S;
+    if(i==0){
+      S=1;    dir = left;}
+    if(i==1){
+      S=-1;   dir = right;}
+    if(i==2){
+      S=1;    dir = -right;}
+    if(i==3){
+      S=-1;   dir = -left;}
+    quad_temp= S*(map(alpha, 0, ampA, -dir*ampA/2, dir* ampA/2)+45);
+//    int quad_temp= S*(map(pos[i], 0, ampA, ampA/2 *(-dir), ampA/2 *(dir))+45);
+    
+    setMotorAngle(i,  90 + quad_temp);
+    setMotorAngle(i+4, 90 + (altura[i] + B_REV*beta) * (2 * ((i-1) * (i-3) == 0) - 1));                  //"(2 * ((i-1) * (i - 3) == 0) - 1)" inverte o sinal caso (i-4) seja 1 ou 2
     if(DOFs_leg>=3)
-      setMotorAngle(i+8, 90 + (altura[i] - gamma) * (2 * ((i-1) * (i-3) == 0) - 1));                //"(2 * ((i-1) * (i - 3) == 0) - 1)" inverte o sinal caso (i-8) seja 1 ou 2
+      setMotorAngle(i+8, 90 + (altura[i] + B_REV*gamma) * (2 * ((i-1) * (i-3) == 0) - 1));                //"(2 * ((i-1) * (i - 3) == 0) - 1)" inverte o sinal caso (i-8) seja 1 ou 2
   }  
   delayMicroseconds(speed*100);
 }

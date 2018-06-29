@@ -35,29 +35,31 @@ const int pos_lado[Total_motors]={-70,-70,70,70,  0,0,0,0};
 //bool modo_omni=0;
 //float phase[4] = {0, 0, 0, 0};
 //float phase[4] = {0, 25, 50, 75};
-float phase[4] = {0, 50, 0, 50};
+//float phase[4] = {0, 50, 0, 50};
 
 char S;
 char p40[Total_motors]    = {40,-40,-40,40, 40,40,40,40};
-char teste[Total_motors]  = {40,40,40,40, 40,40,40,40};
+char teste[Total_motors]  = {0,0,0,0, 90,90,90,90};
+//char teste[Total_motors]  = {40,40,40,40, 40,40,40,40};
 
 Quadruped quadruped(3);
 
 void setup(){
   //float phase[4] = {0, 0, 0, 0};
-  //float phase[4] = {0, 25, 50, 75};
-  float phase[4] = {0, 50, 0, 50};
+  float phase[4] = {0, 25, 50, 75};
+//  float phase[4] = {0, 50, 0, 50};
 
-//  legs.set_curve_parameters(0,30,40,50, 80, 90, 100);
+  quadruped.set_curve_parameters(0,30,40,50, 90, 95, 100);
   //Serial.begin(115200);
-  quadruped.set_curve_parameters(0,24,37.5,50, 60, 80, 100);
+//  quadruped.set_curve_parameters(0,24,37.5,50, 60, 80, 100);
   quadruped.set_phase(phase);
-  quadruped.set_amp_alpha(30);
-  quadruped.set_amp_beta(40);
+  quadruped.set_amp_alpha(40);
+  quadruped.set_amp_beta(120);
   quadruped.set_speed(100);
-  quadruped.set_resolution(30);
+  quadruped.set_resolution(500);
+//  quadruped.beta_negative();
   quadruped.begin();
-  S='1';
+  S='0';
   //bluetooth.begin(9600);
 }
 
@@ -73,16 +75,22 @@ void loop() {
   }
 }
 */
-  if(Serial.available())
+  if(Serial.available()){
     S=Serial.read();
-  
-  if(S=='0')
+  } 
+  if(S=='t')
     quadruped.mover(p40,1,1);
   
-  if(S=='g')
+  if(S=='g'){
+    char teste[Total_motors]  = {0,0,0,0, 90,90,90,90};
     quadruped.real_pos(teste);
-  if(S=='t'){
-    char a[Total_motors] = {0,0,0,0, 0,0,0,0};
+  }
+  if(S=='G'){
+    char teste[Total_motors]  = {90,90,90,90, 90,90,90,90};
+    quadruped.real_pos(teste);
+  }
+  if(S=='y'){
+    char a[Total_motors] = {60,60,60,60, 0,0,0,0};
     quadruped.walk_pos(a);
   }
   if(S=='h')
@@ -105,48 +113,74 @@ void loop() {
   if(S=='S'){
     for(int i=0; i<4;i++)
       quadruped.altura[i] +=10;
-    S='1';
+    S='0';
   }
   if(S=='D'){
     for(int i=0; i<4;i++)
       quadruped.altura[i]-=10;
-    S='1';
+    S='0';
   }
   if(S=='P'){
     for(int i=0; i<4;i++)
       quadruped.altura[i]=0;
-    S='1';
+    S='0';
   }
-
+  
   if(S=='2'){
     for(int i=0; i<4;i++)
       quadruped.altura[i] = 50;
-    S='1';
+    S='0';
   }
   if(S=='3'){
     for(int i=0; i<4;i++)
       quadruped.altura[i] =-50;
-    S='1';
+    S='0';
   }
   if(S=='5'){
     for(int i=0; i<2;i++)
       quadruped.altura[i] +=10;
     for(int i=2; i<4;i++)
       quadruped.altura[i] -=10;
-    S='1';
+    S='0';
   }
   if(S=='6'){
     for(int i=0; i<2;i++)
       quadruped.altura[i] -=10;
     for(int i=2; i<4;i++)
       quadruped.altura[i] +=10;
-    S='1';
+    S='0';
   }
   if(S=='1'){
     char a[Total_motors] = {0,0,0,0, 0,0,0,0};
     quadruped.mover(a,1,1);
   }
   
+  if(S=='/'){
+    Serial.print("new phase: ");
+    while(!Serial.available());
+    S = Serial.read();
+    if(S=='1'){
+      float phase[4] = {0, 25, 50, 75};
+      quadruped.set_phase(phase); 
+    }
+    if(S=='2'){
+      float phase[4] = {0, 50, 0, 50};
+      quadruped.set_phase(phase); 
+    }
+    
+    if(S=='5')
+      quadruped.set_resolution(500);
+    if(S=='6')
+      quadruped.set_resolution(200);
+    if(S=='7')
+      quadruped.set_resolution(100);
+    if(S=='8')
+      quadruped.set_resolution(70);
+    if(S=='9')
+      quadruped.set_resolution(30);
+    Serial.println(S);
+  }
+      
   if(S=='v'){
     Serial.print("new speed: ");
     while(!Serial.available());
@@ -174,7 +208,7 @@ void loop() {
     if(S=='9')
       quadruped.set_speed(500000);
     Serial.println(S);
-    S='1';
+    S='0';
   }
 
   if(S=='z'){
@@ -203,7 +237,12 @@ void loop() {
     S='0';
   }
     
-}
+  if(S=='0'){
+    int Aa = quadruped.get_amp_alpha()/2;
+    char a[Total_motors] = {Aa,Aa,Aa,Aa, 0,0,0,0};
+    quadruped.walk_pos(a);
+  }
+  }
 
 
 
