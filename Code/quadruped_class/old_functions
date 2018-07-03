@@ -1,0 +1,100 @@
+
+/*
+void mover_suave(int pos1[8], int pos2[8], int tempo_total) {
+  int maior_desloc = 0, posF[8];
+  for (int i = 0; i < 8; i++)
+    if (abs(pos1[i] - pos2[i]) > maior_desloc)
+      maior_desloc = abs(pos1[i] - pos2[i]);
+  for (int passo = 0; passo < maior_desloc; passo++) {
+    for (int i = 0; i < 8; i++) 
+      posF[i] = pos1[i] + ((pos2[i] - pos1[i])* passo) / maior_desloc ;
+    mover(posF);
+    //delayMicroseconds(tempo_total);//essa função diminui muito o passo, pode não ser necessário uso de delay
+  }
+}
+*/
+    /*
+    if(i==0||i==2){
+      //setMotorAngle(i, 90 + (-pos_lado[i]*de_lado - ((!de_lado||i==0)*esq)*quadril[i] + ((i==2)*de_lado*dir)*quadril[i]) * INV_IMPAR);
+      //                    0, 90 + (X*0                - ((1)*alpha)*INV_PAR
+
+      setMotorAngle(i, 90 + (((pos_lado[i] +((i==2)*dirD) * legs.get_alpha() )*de_lado) + 
+                            ( !de_lado * dirE * legs.get_alpha() )* (2*(i==2) -1) + amplitudeAlpha*(!i==2) )); 
+      
+      
+      // (pos_lado[i]*de_lado - ( ((!de_lado||i==0)*dirE) + ((i==2)*de_lado*dirD)) * legs.get_alpha() )*(2*(i==0) -1) );
+      Serial.print((pos_lado[i]*de_lado - ( ((!de_lado||i==0)*dirE) + ((i==2)*de_lado*dirD))*legs.get_alpha() ) );
+    }
+    if(i==1||i==3){
+      setMotorAngle(i, 90 + (((pos_lado[i] +((i==2)*dirE) * legs.get_alpha() )*de_lado) + 
+                            ( !de_lado * dirD * legs.get_alpha() ) * (2*(i==1) -1) + amplitudeAlpha*(!i==1)) );
+
+      //setMotorAngle(i, 90 + (pos_lado[i]*de_lado - (((!de_lado||i==3)*dirD) + ((i==1)*de_lado*dirE))*legs.get_alpha()) * (2*(i==3) -1)); 
+      Serial.print((pos_lado[i]*de_lado - (((!de_lado||i==3)*dirD) + ((i==1)*de_lado*dirE))*legs.get_alpha()) ); 
+    
+    }
+  */  
+    //setMotorAngle(i, 90 + (-pos_lado[i]*de_lado - (((!de_lado*dirD) - (de_lado*dirD))*legs.get_alpha()) * INV_IMPAR);
+    
+
+//-----------------------movement pattern----------------------------
+
+        /*
+        float amostra = (phase[pata] * 100) / ciclo;
+        if (amostra <= Xb)
+            beta =  0;
+        else if (amostra <= Xc)
+            beta =  map(amostra, Xb, Xc, 0, ampBeta);
+
+        else if (amostra > Xc)
+            beta =  map(amostra, Xc, Xd, ampBeta, 0);
+
+        if (amostra >= Xb)
+            alpha =  map(amostra, Xb, Xd, ampAlpha , 0);
+        else if (amostra < Xb)
+            alpha =  map(amostra, Xa, Xb, 0, ampAlpha);
+
+        */
+
+        /*
+        if (alpha > ampAlpha)           //filtro
+            alpha = ampAlpha / 2;
+        else if (alpha < -ampAlpha)     //filtro
+            alpha = -ampAlpha / 2;
+        */
+/*
+    setMotorAngle(i+4, 90 + altura[i]+(legs.get_beta()) * (2 * ((i-1) * (i - 3) == 0) - 1));  //"(2 * ((i-1) * (i - 3) == 0) - 1)" inverte o sinal caso (i-4) seja 1 ou 2
+    setMotorAngle(i+8, 90 + altura[i]+(legs.get_beta()) * (2 * ((i-1) * (i - 3) == 0) - 1));      //"(2 * ((i-1) * (i - 3) == 0) - 1)" inverte o sinal caso (i-8) seja 1 ou 2
+   */
+
+
+      if(i==1||i==2)
+        setMotorAngle(i, 90 + (-pos_lado[i]*de_lado - ((!de_lado||i==1)*esq)*quadril[i] + ((i==2)*de_lado*dir)*quadril[i]));
+      if(i==0||i==3)
+        setMotorAngle(i, 90 + (-pos_lado[i]*de_lado - ((!de_lado||i==3)*dir)*quadril[i] + ((i==0)*de_lado*esq)*quadril[i])); 
+      // quando o valor de quadril[i] aumenta, a pata [i] vai para frente
+/*
+  if(S=='L'){
+    de_lado=1;
+    modo_omni=0;
+    S='1';
+  }
+  if(S=='N'){
+    de_lado=0;
+    modo_omni=0;
+    S='1';
+  }
+  if(S=='O'){
+    de_lado=0;
+    modo_omni=1;
+    S='1';
+  }*/
+
+
+  /*if(S=='9'){
+    for(int i=0;i<3;i++){
+      mover(pos2[i],1,1);
+      delay(1000);
+    }
+    S='l';
+  }*/
